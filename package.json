@@ -1,0 +1,20 @@
+{
+  "name": "ICEUtilities",
+  "version": "0.1.0",
+  "description": "Application to display various onboard informations",
+  "main": "main.js",
+  "author": "Adwirawien",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^9.2.0"
+  },
+  "dependencies": {
+    "chartist": "^0.11.4",
+    "mapbox-gl": "^1.11.1",
+    "tailwindcss": "^1.6.2",
+    "wifi-on-ice-position-stream": "^1.0.0"
+  }
+}

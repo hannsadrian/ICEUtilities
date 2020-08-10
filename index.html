@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>ICE Utilities</title>
+    <link href="./styles/style.css" rel="stylesheet" />
+    <style>
+      .ct-chart {
+        fill: none;
+      }
+
+      /* Use this selector to override the line style on a given series */
+      .ct-series-a .ct-line {
+        /* Set the colour of this series line */
+        stroke: red;
+        /* Control the thikness of your lines */
+        stroke-width: 2px;
+        /* Create a dashed line with a pattern */
+        stroke-dasharray: 0 0;
+      }
+
+      /* This selector overrides the points style on line charts. Points on line charts are actually just very short strokes. This allows you to customize even the point size in CSS */
+      .ct-series-a .ct-point {
+        /* Colour of your points */
+        stroke: red;
+        /* Size of your points */
+        stroke-width: 0;
+        /* Make your points appear as squares */
+        stroke-linecap: square;
+      }
+
+      .ct-labels {
+        font-size: 10px;
+      }
+
+      .mapboxgl-control-container {
+        height: 0;
+        width: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mx-5 my-5">
+      <div
+        style="height: 500px;"
+        class="overflow-hidden rounded-lg"
+        id="map"
+      ></div>
+      <p>🚇 Aktuelle Geschwindigkeit: <span id="speed">0</span> km/h</p>
+    </div>
+
+    <div class="mx-5 my-5 bg-gray-200 rounded-lg overflow-hidden">
+      <div class="ct-chart ct-golden-section"></div>
+      <p class="text-xs ml-12 -mt-8 mb-2">
+        Geschwindigkeit der letzten 10 Minuten
+      </p>
+    </div>
+
+    <script>
+      const createStream = require("wifi-on-ice-position-stream");
+      const Chartist = require("chartist");
+      const mapboxgl = require("mapbox-gl");
+
+      speeds = [];
+      let chart = new Chartist.Line(".ct-chart", {
+        data: { series: [speeds] },
+        chartPadding: {
+          right: 40,
+          top: 40,
+        },
+      });
+
+      let lat = 51;
+      let lng = 10;
+      let lastLat = 0;
+
+      const positions = createStream({ interval: 2500 });
+      positions.on("data", (position) => {
+        console.log(position);
+
+        // update displayed speed
+        document.getElementById("speed").innerHTML = position.speed;
+        lat = position.latitude;
+        lng = position.longitude;
+
+        // update chart
+        speeds.push(position.speed);
+        if (speeds.length > 600) speeds.splice(0, 1);
+        chart.update({ series: [speeds] });
+      });
+
+      mapboxgl.accessToken = "<mapbox token>";
+      var map = new mapboxgl.Map({
+        container: "map",
+        style: "mapbox://styles/mapbox/streets-v11", // stylesheet location
+        center: [lng, lat], // starting position [lng, lat]
+        zoom: 4.5, // starting zoom
+      });
+      function getTrainPos() {
+        return {
+          type: "FeatureCollection",
+          features: [
+            {
+              type: "Feature",
+              geometry: {
+                type: "Point",
+                coordinates: [lng, lat],
+              },
+            },
+          ],
+        };
+      }
+      map.on("load", function () {
+        map.dragRotate.disable();
+        map.touchZoomRotate.disableRotation();
+        map.loadImage("./metro.png", function (error, image) {
+          if (error) throw error;
+          map.addImage("arrow", image);
+          map.addSource("point", {
+            type: "geojson",
+            data: getTrainPos(),
+          });
+          map.addLayer({
+            id: "point",
+            source: "point",
+            type: "symbol",
+            layout: {
+              "icon-image": "arrow",
+              "icon-size": 0.25,
+              "icon-rotate": 0,
+            },
+          });
+        });
+        function updateTrainPos() {
+          try {
+            if (lastLat !== lat) {
+              map.getSource("point").setData(getTrainPos());
+              lastLat = lat;
+            }
+          } catch (err) {}
+          requestAnimationFrame(updateTrainPos);
+        }
+        updateTrainPos();
+      });
+    </script>
+  </body>
+</html>
