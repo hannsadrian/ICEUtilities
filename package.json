@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "chartist": "^0.11.4",
+    "dotenv": "^8.2.0",
     "mapbox-gl": "^1.11.1",
     "tailwindcss": "^1.6.2",
     "wifi-on-ice-position-stream": "^1.0.0"

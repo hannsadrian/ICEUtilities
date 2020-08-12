@@ -58,6 +58,7 @@
     </div>
 
     <script>
+      require("dotenv").config();
       const createStream = require("wifi-on-ice-position-stream");
       const Chartist = require("chartist");
       const mapboxgl = require("mapbox-gl");
@@ -67,8 +68,8 @@
         data: { series: [speeds] },
         chartPadding: {
           right: 40,
-          top: 40,
-        },
+          top: 40
+        }
       });
 
       let lat = 51;
@@ -76,7 +77,7 @@
       let lastLat = 0;
 
       const positions = createStream({ interval: 2500 });
-      positions.on("data", (position) => {
+      positions.on("data", position => {
         console.log(position);
 
         // update displayed speed
@@ -90,12 +91,12 @@
         chart.update({ series: [speeds] });
       });
 
-      mapboxgl.accessToken = "<mapbox token>";
+      mapboxgl.accessToken = process.env.MAPBOX_TOKEN;
       var map = new mapboxgl.Map({
         container: "map",
         style: "mapbox://styles/mapbox/streets-v11", // stylesheet location
         center: [lng, lat], // starting position [lng, lat]
-        zoom: 4.5, // starting zoom
+        zoom: 4.5 // starting zoom
       });
       function getTrainPos() {
         return {
@@ -105,21 +106,21 @@
               type: "Feature",
               geometry: {
                 type: "Point",
-                coordinates: [lng, lat],
-              },
-            },
-          ],
+                coordinates: [lng, lat]
+              }
+            }
+          ]
         };
       }
-      map.on("load", function () {
+      map.on("load", function() {
         map.dragRotate.disable();
         map.touchZoomRotate.disableRotation();
-        map.loadImage("./metro.png", function (error, image) {
+        map.loadImage("./metro.png", function(error, image) {
           if (error) throw error;
           map.addImage("arrow", image);
           map.addSource("point", {
             type: "geojson",
-            data: getTrainPos(),
+            data: getTrainPos()
           });
           map.addLayer({
             id: "point",
@@ -128,8 +129,8 @@
             layout: {
               "icon-image": "arrow",
               "icon-size": 0.25,
-              "icon-rotate": 0,
-            },
+              "icon-rotate": 0
+            }
           });
         });
         function updateTrainPos() {
