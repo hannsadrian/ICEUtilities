@@ -1,4 +1,5 @@
 const { app, BrowserWindow } = require("electron");
+require("dotenv").config();
 
 function createWindow() {
   // Erstelle das Browser-Fenster.

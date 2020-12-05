@@ -63,9 +63,9 @@
       const Chartist = require("chartist");
       const mapboxgl = require("mapbox-gl");
 
-      speeds = [];
+      speeds = [0, 5, 9, 13, 32, 66, 66, 66, 80, 100];
       let chart = new Chartist.Line(".ct-chart", {
-        data: { series: [speeds] },
+        series: [speeds],
         chartPadding: {
           right: 40,
           top: 40
@@ -77,7 +77,8 @@
       let lastLat = 0;
 
       const positions = createStream({ interval: 2500 });
-      positions.on("data", position => {
+      positions.on("error", () => console.log("error"));
+      positions.on("data", (position) => {
         console.log(position);
 
         // update displayed speed
@@ -88,7 +89,7 @@
         // update chart
         speeds.push(position.speed);
         if (speeds.length > 600) speeds.splice(0, 1);
-        chart.update({ series: [speeds] });
+        //chart.update({ series: [speeds] });
       });
 
       mapboxgl.accessToken = process.env.MAPBOX_TOKEN;
